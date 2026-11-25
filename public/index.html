@@ -486,6 +486,69 @@ footer.site .legal{border-top:1px solid rgba(255,255,255,.1);padding:16px 20px;f
 button[aria-busy="true"]{opacity:.7;cursor:progress}
 @media (max-width:860px){.auth-wrap{grid-template-columns:1fr}.auth-card{max-width:none}.auth-aside{display:none}}
 @media (prefers-reduced-motion:reduce){.oauth-btn,.pw-meter i{transition:none}}
+/* ===== FX: animasi interaktif saat kursor diarahkan (hanya perangkat dengan mouse, hormati reduced-motion) ===== */
+.nav>a{position:relative}
+.nav>a::after{content:"";position:absolute;left:12px;right:12px;bottom:4px;height:2px;border-radius:2px;background:var(--leaf);transform:scaleX(0);transform-origin:left;transition:transform .25s var(--ease)}
+.nav>a:hover::after,.nav>a:focus-visible::after,.nav>a.active::after{transform:scaleX(1)}
+.fx-glare{position:relative;isolation:isolate}
+.fx-glare::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;z-index:3;transition:opacity .3s var(--ease);background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.32),rgba(255,255,255,0) 40%)}
+.fx-spot{position:relative}
+.fx-spot::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(260px circle at var(--mx,50%) var(--my,50%),rgba(111,170,96,.18),transparent 60%);border-radius:inherit}
+.pimg::before,.pimg::after{content:"";position:absolute;left:50%;bottom:38%;width:26px;height:26px;border-radius:50%;pointer-events:none;opacity:0;z-index:2;background:radial-gradient(circle,rgba(120,120,110,.35),transparent 70%);filter:blur(2px)}
+.pimg::after{left:58%;width:18px;height:18px}
+.fx-ember{transition:filter .35s var(--ease)}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .fx-tilt{transition:transform .45s var(--ease),box-shadow .3s,border-color .2s;transform-style:preserve-3d}
+  .fx-tilt.is-tilt{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-6px)!important;transition:transform .12s linear,box-shadow .3s,border-color .2s;box-shadow:0 18px 40px -18px rgba(20,60,40,.35)}
+  .fx-glare.is-tilt::after{opacity:1}
+  .fx-spot:hover::before{opacity:1}
+  .fx-mag{transition:transform .35s var(--ease),background .2s,box-shadow .2s}
+  .fx-mag.is-mag{transform:translate(var(--bx,0),var(--by,0));transition:transform .1s linear,background .2s}
+  .fx-mag svg{transition:transform .3s var(--ease)}
+  .fx-mag:hover svg{transform:translateX(3px)}
+  .pcard:hover .pimg>a>svg,.pcard:hover .pimg>svg{transform:scale(1.07) rotate(-1.5deg)}
+  .pimg svg{transition:transform .5s var(--ease)}
+  .pcard:hover .pimg::before{animation:fxSmoke 2.4s ease-out infinite}
+  .pcard:hover .pimg::after{animation:fxSmoke 2.4s ease-out .9s infinite}
+  .pcard:hover .fx-ember{filter:drop-shadow(0 0 10px rgba(240,140,40,.55)) saturate(1.15)}
+  .cat svg{transition:transform .45s var(--ease)}
+  .cat:hover svg{transform:scale(1.08) translateY(-2px)}
+  .cat:hover b{color:var(--forest)}
+  .use .ic{transition:transform .35s var(--ease),background .25s,color .25s}
+  .use:hover .ic{transform:rotate(-8deg) scale(1.12);background:var(--forest);color:#fff}
+  .edu svg{transition:transform .6s var(--ease)}
+  .edu:hover svg{transform:scale(1.05)}
+  .role-tile svg{transition:transform .35s var(--ease)}
+  .role-tile:hover svg{transform:translateY(-2px) rotate(-6deg) scale(1.1)}
+  .ibtn svg{transition:transform .25s var(--ease)}
+  .ibtn:hover svg{animation:fxPop .45s var(--ease)}
+  #btnFav:hover svg,.fav:hover svg{animation:fxBeat .7s var(--ease)}
+  #btnCart:hover svg{animation:fxSwing .6s var(--ease)}
+  #btnBell:hover svg{animation:fxRing .7s var(--ease);transform-origin:50% 10%}
+  .hero-art{transition:transform .6s var(--ease)}
+  .hero-art.is-par{transform:translate(var(--px,0),var(--py,0));transition:transform .15s linear}
+  .hero .chip{transition:transform .3s var(--ease)}
+  .hero .chip:hover{transform:translateY(-2px) scale(1.04)}
+  .why>div,.trust>div,.jstats>div{transition:transform .3s var(--ease)}
+  .why>div:hover,.trust>div:hover,.jstats>div:hover{transform:translateY(-3px)}
+  .pin circle.o{transition:r .25s var(--ease),stroke-width .25s}
+  .pin:hover circle.o{animation:fxPulse 1.2s ease-out infinite}
+  .refcard,.ref{transition:transform .25s var(--ease),box-shadow .25s}
+  .refcard:hover,.ref:hover{transform:translateY(-2px)}
+  .brand svg{transition:transform .5s var(--ease)}
+  .brand:hover svg{transform:rotate(-12deg) scale(1.06)}
+  .flame,.burn svg{transition:filter .3s}
+  .burn:hover svg{filter:drop-shadow(0 0 14px rgba(240,140,40,.45))}
+}
+@media (hover:none),(pointer:coarse){
+  .pcard:active,.cat:active,.use:active,.edu:active,.role-tile:active,.btn:active{transform:scale(.98);transition:transform .1s}
+}
+@keyframes fxSmoke{0%{opacity:0;transform:translate(-50%,0) scale(.6)}25%{opacity:.8}100%{opacity:0;transform:translate(-30%,-70px) scale(2.2)}}
+@keyframes fxPop{0%{transform:scale(1)}40%{transform:scale(1.22)}70%{transform:scale(.94)}100%{transform:scale(1)}}
+@keyframes fxBeat{0%,100%{transform:scale(1)}25%{transform:scale(1.25)}45%{transform:scale(.95)}65%{transform:scale(1.15)}}
+@keyframes fxSwing{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}55%{transform:rotate(9deg)}80%{transform:rotate(-4deg)}}
+@keyframes fxRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
+@keyframes fxPulse{0%{stroke-width:3}50%{stroke-width:7;stroke-opacity:.5}100%{stroke-width:3}}
 </style>
 </head>
 <body>
@@ -2962,6 +3025,52 @@ window.addEventListener('hashchange', render);
 load(); if (!Array.isArray(S.cart)) S.cart = []; if (!Array.isArray(S.compare)) S.compare = [];
 initShell(); timerTick(); render();
 if (!S.settings.onboarded) setTimeout(() => { if ($('#modal').hidden) openTour(); }, 700);
+
+/* ======================= FX: animasi interaktif kursor ======================= */
+// Tilt 3D + kilau pada kartu, tombol magnetik, parallax hero, sorotan mengikuti kursor.
+// Hanya aktif untuk mouse/trackpad dan bila pengguna tidak memilih "kurangi gerakan".
+const FX = {
+  ok: () => matchMedia('(hover: hover) and (pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches,
+  TILT: '.pcard,.cat,.use,.edu,.role-tile,.refcard',
+  MAG: '.btn.primary,.btn.amber,.btn.light',
+  SPOT: '.why>div,.trust>div,.jstats>div,.panel.fx-spot',
+  raf: 0, ev: null, cur: null,
+  decorate(root = document) {
+    root.querySelectorAll(this.TILT).forEach(el => el.classList.add('fx-tilt', 'fx-glare'));
+    root.querySelectorAll(this.MAG).forEach(el => el.classList.add('fx-mag'));
+    root.querySelectorAll(this.SPOT).forEach(el => el.classList.add('fx-spot'));
+    root.querySelectorAll('.pimg svg').forEach(el => el.classList.add('fx-ember'));
+  },
+  frame() {
+    FX.raf = 0; const e = FX.ev; if (!e) return;
+    const t = e.target instanceof Element ? e.target : null; if (!t) return;
+    const tilt = t.closest('.fx-tilt');
+    if (FX.cur && FX.cur !== tilt) { FX.cur.classList.remove('is-tilt'); FX.cur = null; }
+    if (tilt) { const r = tilt.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      const k = Math.min(1, 320 / Math.max(r.width, 1)) * 7; // kartu besar miring lebih sedikit
+      tilt.style.setProperty('--ry', ((x - .5) * k).toFixed(2) + 'deg'); tilt.style.setProperty('--rx', ((.5 - y) * k).toFixed(2) + 'deg');
+      tilt.style.setProperty('--mx', (x * 100).toFixed(1) + '%'); tilt.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+      tilt.classList.add('is-tilt'); FX.cur = tilt; }
+    const spot = t.closest('.fx-spot'); if (spot) { const r = spot.getBoundingClientRect(); spot.style.setProperty('--mx', (e.clientX - r.left) + 'px'); spot.style.setProperty('--my', (e.clientY - r.top) + 'px'); }
+    const mag = t.closest('.fx-mag');
+    $$('.fx-mag.is-mag').forEach(m => { if (m !== mag) { m.classList.remove('is-mag'); m.style.removeProperty('--bx'); m.style.removeProperty('--by'); } });
+    if (mag && !mag.disabled) { const r = mag.getBoundingClientRect(); mag.style.setProperty('--bx', ((e.clientX - r.left - r.width / 2) * .18).toFixed(1) + 'px'); mag.style.setProperty('--by', ((e.clientY - r.top - r.height / 2) * .3).toFixed(1) + 'px'); mag.classList.add('is-mag'); }
+    const hero = t.closest('.hero'), art = hero && hero.querySelector('.hero-art');
+    $$('.hero-art.is-par').forEach(a => { if (a !== art) a.classList.remove('is-par'); });
+    if (art) { const r = hero.getBoundingClientRect(); art.style.setProperty('--px', (((e.clientX - r.left) / r.width - .5) * -16).toFixed(1) + 'px'); art.style.setProperty('--py', (((e.clientY - r.top) / r.height - .5) * -10).toFixed(1) + 'px'); art.classList.add('is-par'); }
+  },
+  reset() { $$('.is-tilt,.is-mag,.is-par').forEach(x => x.classList.remove('is-tilt', 'is-mag', 'is-par')); FX.cur = null; },
+  init() {
+    document.addEventListener('pointermove', e => { if (e.pointerType !== 'mouse' || !FX.ok()) return; FX.ev = e; if (!FX.raf) FX.raf = requestAnimationFrame(FX.frame); }, {passive: true});
+    document.addEventListener('pointerleave', FX.reset); window.addEventListener('blur', FX.reset);
+    document.addEventListener('scroll', () => { if (FX.cur) FX.reset(); }, {passive: true});
+    const app = document.getElementById('app'); FX.decorate(document);
+    if (app) new MutationObserver(() => FX.decorate(app)).observe(app, {childList: true, subtree: true});
+    ['#modal', '#drawer'].forEach(s => { const el = document.querySelector(s); if (el) new MutationObserver(() => FX.decorate(el)).observe(el, {childList: true, subtree: true}); });
+  }
+};
+
+FX.init();
 initServer().then(on => { if (!on) initCloud(); });
 </script>
 </body>
