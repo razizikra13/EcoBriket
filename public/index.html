@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#1F5C40">
-<meta name="description" content="EcoBriket: katalog dan alat bantu briket bio-arang dari biomassa lokal Aceh Selatan, dengan data mutu dari jurnal.">
+<meta name="description" content="EcoBriket: katalog, pencari, dan alat produksi briket bio-arang dari biomassa untuk pengguna di Indonesia dan dunia, dengan data mutu dari jurnal.">
 <style>
 :root{
   --forest:#1F5C40;--forest2:#2A7050;--forest-d:#163F2C;--forest-dd:#0F2E20;--leaf:#5FA777;--mint:#E6F0E8;--mint2:#F2F7F2;
@@ -1114,7 +1114,7 @@ V.pabrik = {render(id) {
         <dt>${t('d_contact')}</dt><dd>${esc(p.kontak)}</dd>
       </dl>
       <h3 style="margin-top:16px">${t('d_fac')}</h3><div class="row" style="gap:6px">${(p.fasilitasProduksi||[]).map(f => `<span class="chip">${esc(el('fasilitas', f))}</span>`).join('') || '—'}</div>
-      <div class="row" style="margin-top:18px">${favBtn(p.id,'pabrik')}<a class="btn" href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener">${ico('map',16)} ${t('d_maps')}</a><button class="btn wa" data-wa="${esc(p.id)}" data-watype="pabrik">${ico('chat',16)} ${t('d_wa')}</button></div>
+      <div class="row" style="margin-top:18px">${favBtn(p.id,'pabrik')}<a class="btn" href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener noreferrer">${ico('map',16)} ${t('d_maps')}</a><button class="btn wa" data-wa="${esc(p.id)}" data-watype="pabrik">${ico('chat',16)} ${t('d_wa')}</button></div>
       <p class="tiny muted" style="margin-top:6px">${t('d_maps_n')}</p>
     </div>
   </div>
@@ -1361,11 +1361,11 @@ V.peta = {
       ${pins}
     </svg>
     <div class="legend" style="margin-top:8px">${Object.keys(PIN).map(k => `<span><i style="background:${PIN[k]}"></i>${esc(el('kategori', k))}</span>`).join('')}</div></div>
-    <aside class="panel" id="pinInfo"><p class="muted">${t('m_click')}</p><div class="tbl-wrap"><table class="tbl"><tbody>${S.pabrik.map(p => `<tr><td><a href="#/pabrik/${esc(p.id)}">${esc(p.nama.replace('Contoh: ',''))}</a></td><td class="small">${esc(p.gampong)}</td><td><a href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener" title="${t('d_maps')}">${ico('map',16)}</a></td></tr>`).join('')}</tbody></table></div></aside></div>`;
+    <aside class="panel" id="pinInfo"><p class="muted">${t('m_click')}</p><div class="tbl-wrap"><table class="tbl"><tbody>${S.pabrik.map(p => `<tr><td><a href="#/pabrik/${esc(p.id)}">${esc(p.nama.replace('Contoh: ',''))}</a></td><td class="small">${esc(p.gampong)}</td><td><a href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener noreferrer" title="${t('d_maps')}">${ico('map',16)}</a></td></tr>`).join('')}</tbody></table></div></aside></div>`;
   },
   bind() {
     const show = id => { const p = byId('pabrik', id); if (!p) return; $$('.pin').forEach(g => g.classList.toggle('sel', g.dataset.pin === id));
-      $('#pinInfo').innerHTML = `<span class="chip c-${p.kategori}">${esc(el('kategori', p.kategori))}</span><h3 style="margin-top:8px">${esc(p.nama)}</h3><p class="small muted">${ico('pin',15)} ${esc(p.gampong)}, Meukek</p><p class="small">${esc(p.deskripsi)}</p><p>${badge('stPabrik', p.statusBriketSni)} ${badge('stData', p.statusData)}</p><div class="row"><a class="btn sm primary" href="#/pabrik/${esc(p.id)}">${t('detail')}</a><a class="btn sm" href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener">${ico('map',16)} ${t('d_maps')}</a>${favBtn(p.id,'pabrik')}</div><p class="tiny muted" style="margin-top:8px">${t('d_maps_n')}</p><button class="btn sm ghost" id="pinBack" style="margin-top:6px">${t('back')}</button>`;
+      $('#pinInfo').innerHTML = `<span class="chip c-${p.kategori}">${esc(el('kategori', p.kategori))}</span><h3 style="margin-top:8px">${esc(p.nama)}</h3><p class="small muted">${ico('pin',15)} ${esc(p.gampong)}, Meukek</p><p class="small">${esc(p.deskripsi)}</p><p>${badge('stPabrik', p.statusBriketSni)} ${badge('stData', p.statusData)}</p><div class="row"><a class="btn sm primary" href="#/pabrik/${esc(p.id)}">${t('detail')}</a><a class="btn sm" href="${esc(p.mapsUrl || mapsUrl(p.gampong))}" target="_blank" rel="noopener noreferrer">${ico('map',16)} ${t('d_maps')}</a>${favBtn(p.id,'pabrik')}</div><p class="tiny muted" style="margin-top:8px">${t('d_maps_n')}</p><button class="btn sm ghost" id="pinBack" style="margin-top:6px">${t('back')}</button>`;
       $('#pinBack').onclick = () => render(); };
     $$('.pin').forEach(g => { g.onclick = () => show(g.dataset.pin); g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(g.dataset.pin); } }; });
   }
@@ -1683,7 +1683,7 @@ function openWA(id, type) {
     ? tl([`Assalamu'alaikum. Saya ingin berkoordinasi soal pemanfaatan ampas pala dan briket bio-arang dengan ${o.nama} (${o.gampong}, Meukek). [Pesan demo EcoBriket]`, `Hello. I'd like to coordinate on nutmeg residue and bio-charcoal briquettes with ${o.nama} (${o.gampong}, Meukek). [EcoBriket demo message]`])
     : tl([`Assalamu'alaikum. Saya ingin memesan ${o.nama} (${o.gampong}). Apakah stok masih tersedia? Mohon info status uji mutunya. [Pesan demo EcoBriket]`, `Hello. I'd like to order ${o.nama} (${o.gampong}). Is it in stock? Please share its quality-test status. [EcoBriket demo message]`]);
   openModal(t('wa_title'), `<p class="notice">${t('wa_note')}</p><p class="small"><b>${t('d_contact')}:</b> ${esc(o.kontak)}</p><label for="waMsg">${t('wa_msg')}</label><textarea id="waMsg" style="min-height:120px">${esc(msg)}</textarea>`,
-    `<button class="btn ghost" data-close type="button">${t('close')}</button><a class="btn wa" id="waGo" target="_blank" rel="noopener" href="#">${ico('chat',16)} ${t('wa_open')}</a>`);
+    `<button class="btn ghost" data-close type="button">${t('close')}</button><a class="btn wa" id="waGo" target="_blank" rel="noopener noreferrer" href="#">${ico('chat',16)} ${t('wa_open')}</a>`);
   const upd = () => $('#waGo').href = 'https://wa.me/?text=' + encodeURIComponent($('#waMsg').value);
   $('#waMsg').addEventListener('input', upd); upd();
 }
@@ -1904,7 +1904,7 @@ function checkout() {
 }
 function openWAText(msg, contacts) {
   openModal(t('wa_title'), `<p class="notice">${t('wa_note')}</p>${contacts ? `<p class="small"><b>${t('d_contact')}:</b><br>${contacts}</p>` : ''}<label for="waMsg">${t('wa_msg')}</label><textarea id="waMsg" style="min-height:160px">${esc(msg)}</textarea>`,
-    `<button class="btn ghost" data-close type="button">${t('close')}</button><a class="btn wa" id="waGo" target="_blank" rel="noopener" href="#">${ico('chat', 18)} ${t('wa_open')}</a>`);
+    `<button class="btn ghost" data-close type="button">${t('close')}</button><a class="btn wa" id="waGo" target="_blank" rel="noopener noreferrer" href="#">${ico('chat', 18)} ${t('wa_open')}</a>`);
   const upd = () => $('#waGo').href = 'https://wa.me/?text=' + encodeURIComponent($('#waMsg').value);
   $('#waMsg').addEventListener('input', upd); upd();
 }
@@ -2525,7 +2525,8 @@ const AK = {
     else body = `<div class="two"><form id="pwForm" class="panel" novalidate><h3 style="margin-top:0">${u.punyaSandi ? tl(['Ganti kata sandi','Change password']) : tl(['Atur kata sandi','Set a password'])}</h3>
         ${u.punyaSandi ? '' : `<p class="small muted">${tl(['Akun ini dibuat lewat Google/GitHub. Atur kata sandi agar bisa masuk juga dengan email.','This account was created via Google/GitHub. Set a password to also sign in with email.'])}</p>`}
         <div class="fg one">${u.punyaSandi ? pwField('lama', tl(['Kata sandi lama','Current password']), 'current-password', false) : ''}${pwField('baru', tl(['Kata sandi baru','New password']), 'new-password', true)}</div>
-        <div class="err-inline" id="e_form" role="alert"></div><button class="btn primary" type="submit" style="margin-top:12px">${ico('key', 16)} ${tl(['Simpan kata sandi','Save password'])}</button><p class="tiny muted">${tl(['Sesi di perangkat lain akan dikeluarkan.','Sessions on other devices will be signed out.'])}</p></form>
+        <div class="err-inline" id="e_form" role="alert"></div><button class="btn primary" type="submit" style="margin-top:12px">${ico('key', 16)} ${tl(['Simpan kata sandi','Save password'])}</button><p class="tiny muted">${tl(['Sesi di perangkat lain akan dikeluarkan.','Sessions on other devices will be signed out.'])}</p>
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><h3 style="margin:0 0 6px">${tl(['Sesi aktif','Active sessions'])}</h3><p class="small muted">${tl(['Curiga akun dipakai orang lain? Keluarkan semua perangkat, lalu ganti kata sandi.','Suspect someone else is using your account? Sign out everywhere, then change your password.'])}</p><button class="btn" type="button" id="logoutAll">${ico('shield', 16)} ${tl(['Keluar dari semua perangkat','Sign out of all devices'])}</button></form>
         <section class="panel danger-zone"><h3 style="margin-top:0">${tl(['Hapus akun','Delete account'])}</h3><p class="small">${tl(['Menghapus akun, profil, dan semua data tersimpan di server secara permanen.','Permanently deletes your account, profile and all data stored on the server.'])}</p>
         ${u.punyaSandi ? pwField('del', tl(['Ketik kata sandi untuk konfirmasi','Type your password to confirm']), 'current-password', false) : ''}<div class="err-inline" id="e_del2"></div>
         <button class="btn danger" type="button" id="delAcc" style="margin-top:10px">${tl(['Hapus akun permanen','Delete account permanently'])}</button></section></div>`;
@@ -2564,6 +2565,9 @@ const AK = {
     if (pf) pf.onsubmit = async e => { e.preventDefault(); const lama = $('#au_lama') ? $('#au_lama').value : '', baru = $('#au_baru').value;
       if (baru.length < 8 || !/[A-Za-z]/.test(baru) || !/\d/.test(baru)) return showErrs({baru: tl(['Minimal 8 karakter, berisi huruf dan angka.','At least 8 characters with letters and numbers.'])});
       busy(pf, true); try { const r = await api('/api/auth/password', 'PUT', {lama, baru}); SRV.user = r.user; toast(tl(['Kata sandi disimpan.','Password saved.'])); render(); } catch (er2) { busy(pf, false); showErrs(er2.fields || {}); $('#e_form').textContent = er2.message; } };
+    if ($('#logoutAll')) $('#logoutAll').onclick = () => askConfirm(tl(['Semua sesi, termasuk perangkat ini, akan dikeluarkan. Lanjutkan?','All sessions, including this device, will be signed out. Continue?']), async () => {
+      try { await pushServer(); await api('/api/auth/logout-all', 'POST', {}); } catch (e) {}
+      const lang = S.settings.lang, ui = S.ui; SRV.user = null; S = Object.assign(seedData(), {ui}); S.settings.lang = lang; S.settings.onboarded = true; S.ui.akTab = 'masuk'; saveLocal(); cloudState('guest'); toast(tl(['Semua sesi dikeluarkan.','All sessions signed out.'])); render(); }, tl(['Keluarkan semua','Sign out all']));
     if ($('#delAcc')) $('#delAcc').onclick = () => { const pw = $('#au_del') ? $('#au_del').value : '';
       if (SRV.user.punyaSandi && !pw) { $('#e_del2').textContent = tl(['Isi kata sandi dulu.','Enter your password first.']); $('#au_del').focus(); return; }
       askConfirm(tl(['Akun dan semua data Anda di server akan dihapus permanen. Lanjutkan?','Your account and all its server data will be permanently deleted. Continue?']), async () => {
@@ -2700,7 +2704,8 @@ V.pesanan = {
 const orderMsg = (items, total) => tl(["Assalamu'alaikum. Saya ingin memesan briket bio-arang:", 'Hello. I would like to order bio-charcoal briquettes:']) + '\n' + items.map(i => `- ${i.nama}: ${i.kg} kg × ${rp(i.harga)} = ${rp(i.kg * i.harga)}`).join('\n') + `\nTotal: ${rp(total)}\n` + (me() ? tl(['Pemesan: ','Ordered by: ']) + me().nama + ' (' + me().gampong + ')\n' : '') + tl(['Mohon info ketersediaan & status uji mutunya. [Pesan demo EcoBriket]', 'Please confirm availability & quality-test status. [EcoBriket demo message]']);
 
 /* ======================= CSV helpers & export/import center ======================= */
-const csvCell = v => { const s = Array.isArray(v) ? v.join('|') : (v == null ? '' : String(v)); return /[",;\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+// Cegah CSV/formula injection (OWASP): sel teks yang diawali = + - @ diberi awalan ' agar Excel tidak mengeksekusinya.
+const csvCell = v => { let s = Array.isArray(v) ? v.join('|') : (v == null ? '' : String(v)); if (/^[=+\-@\t\r]/.test(s) && !/^-?\d+([.,]\d+)?$/.test(s)) s = "'" + s; return /[",;\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
 const toCSV = (head, rows) => '﻿' + [head.map(csvCell).join(','), ...rows.map(r => r.map(csvCell).join(','))].join('\r\n');
 function parseCSV(text) {
   text = String(text || '').replace(/^﻿/, ''); const first = text.split(/\r?\n/)[0] || '';
@@ -2719,7 +2724,7 @@ const schemaCols = tab => ['id'].concat(SCHEMA[tab].fields.map(f => f.k));
 const tableCSV = tab => toCSV(schemaCols(tab), S[tab].map(o => schemaCols(tab).map(k => getPath(o, k))));
 function coerceRow(tab, head, cells) {
   const sc = SCHEMA[tab]; const o = JSON.parse(JSON.stringify(sc.blank || {})); o.id = uid(sc.prefix); const errs = [];
-  head.forEach((h, i) => { const k = h.trim(); const raw = (cells[i] == null ? '' : String(cells[i])).trim();
+  head.forEach((h, i) => { const k = h.trim(); const raw = (cells[i] == null ? '' : String(cells[i])).trim().replace(/^'(?=[=+\-@])/, '');
     if (k === 'id') { if (raw) o.id = raw; return; }
     const f = sc.fields.find(x => x.k === k); if (!f) return;
     let v = raw;
@@ -2837,7 +2842,7 @@ V.jurnal = {
       $('#jDetail').innerHTML = `<div class="panel" style="background:var(--mint2)"><div class="row between"><h3 style="margin:0">${esc(b.querySelector('.hl').textContent)}</h3>${L ? `<a class="btn sm" href="#/stok?bahan=${k}">${ico('grid', 14)} ${tl(['Lihat produknya','See products'])}</a>` : ''}</div>
         ${L ? `<div class="facts" style="margin-top:10px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))">${JPARAM.map(([p, l, u]) => `<div>${tl(l)}<b>${isNum(L[p]) ? fmt(L[p], u === 'kal/g' ? 0 : 2) + ' ' + u : '—'}</b></div>`).join('')}</div>` : ''}
         ${L && L.note ? `<p class="small" style="margin:10px 0 0">${tl(L.note)}</p>` : ''}
-        <div style="margin-top:10px">${[...new Set(refs)].map(id => { const r = refById(id); return r ? `<p class="small" style="margin:6px 0"><b>${id}</b> · ${esc(r.a)} — ${esc(r.topik)}. ${esc(r.data)} <a href="${esc(r.url)}" target="_blank" rel="noopener">${tl(['Buka sumber','Open source'])} ↗</a></p>` : ''; }).join('')}</div></div>`; });
+        <div style="margin-top:10px">${[...new Set(refs)].map(id => { const r = refById(id); return r ? `<p class="small" style="margin:6px 0"><b>${id}</b> · ${esc(r.a)} — ${esc(r.topik)}. ${esc(r.data)} <a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${tl(['Buka sumber','Open source'])} ↗</a></p>` : ''; }).join('')}</div></div>`; });
     const calc = () => { const prod = num($('#es_prod').value), pct = num($('#es_pct').value), rend = num($('#es_rend').value), rb = num($('#es_rb').value); S.ui.est = {prod, pct, rend, rb}; $('#es_pctv').textContent = pct + '%';
       const amp = prod * pct / 100 * (1 - rend / 100), bri = amp * rb / 100, wood = bri * 1000 / 300;
       $('#esOut').innerHTML = `<div><b>${fmt(prod * pct / 100, 1)} t</b><span>${tl(['pala disuling/tahun','nutmeg distilled/yr'])}</span></div><div><b>${fmt(amp, 1)} t</b><span>${tl(['ampas/tahun','residue/yr'])}</span></div><div class="hl"><b>${fmt(bri, 1)} t</b><span>${tl(['briket/tahun (estimasi)','briquettes/yr (est.)'])}</span></div><div><b>${fmt(wood, 0)} m³</b><span>${tl(['setara kayu bakar/tahun','firewood equivalent/yr'])}</span></div>`; };
@@ -2854,7 +2859,7 @@ V.referensi = {
   bind(_, q) {
     const hl = q.get('id');
     const draw = () => { const f = ($('#rq').value || '').toLowerCase(); S.ui.rq = f;
-      $('#refGrid').innerHTML = REFS.filter(r => !f || [r.id, r.a, r.topik, r.data].join(' ').toLowerCase().includes(f)).map(r => `<article class="panel refcard ${hl === r.id ? 'hl' : ''}" id="ref-${r.id}"><div class="row between"><span class="chip">${r.id}</span><button class="btn sm ghost" type="button" data-cite="${r.id}">${tl(['Salin sitasi','Copy citation'])}</button></div><h3 style="margin:10px 0 4px;font-size:1rem">${esc(r.topik)}</h3><div class="small muted">${esc(r.a)}</div><p class="small" style="margin:8px 0">${esc(r.data)}</p><a class="small" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.url.replace(/^https:\/\//, '').slice(0, 60))}… ↗</a></article>`).join('') || `<p class="empty">${t('none')}</p>`;
+      $('#refGrid').innerHTML = REFS.filter(r => !f || [r.id, r.a, r.topik, r.data].join(' ').toLowerCase().includes(f)).map(r => `<article class="panel refcard ${hl === r.id ? 'hl' : ''}" id="ref-${r.id}"><div class="row between"><span class="chip">${r.id}</span><button class="btn sm ghost" type="button" data-cite="${r.id}">${tl(['Salin sitasi','Copy citation'])}</button></div><h3 style="margin:10px 0 4px;font-size:1rem">${esc(r.topik)}</h3><div class="small muted">${esc(r.a)}</div><p class="small" style="margin:8px 0">${esc(r.data)}</p><a class="small" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.url.replace(/^https:\/\//, '').slice(0, 60))}… ↗</a></article>`).join('') || `<p class="empty">${t('none')}</p>`;
       $$('[data-cite]').forEach(b => b.onclick = async () => { const r = refById(b.dataset.cite); const txt = `${r.a}. ${r.topik}. ${r.url}`; try { await navigator.clipboard.writeText(txt); toast(tl(['Sitasi tersalin','Citation copied'])); } catch (e) { showCopy(r.id + '.txt', txt); } }); };
     $('#rq').addEventListener('input', draw); draw();
     $('[data-csv-ref]').onclick = () => exportFile('ecobriket-referensi.csv', toCSV(['id','penulis_sumber','topik','data','url'], REFS.map(r => [r.id, r.a, r.topik, r.data, r.url])), 'text/csv');

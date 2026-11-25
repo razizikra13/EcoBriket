@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { OAuth2Client } from 'google-auth-library';
 import { JsonDB } from './db.js';
 import {
-  hashPassword, verifyPassword, burnTime, randomToken, sha256, newId,
-  rateLimiter, parseCookies, cookie,
+  hashPassword, verifyPassword, needsRehash, burnTime, randomToken, sha256, newId,
+  rateLimiter, parseCookies, cookie, safeReviver, secLog,
 } from './security.js';
+import { headersForFile } from './headers.js';
 import { cleanProfile, cleanEmail, passwordProblem, publicUser, isComplete } from './validate.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -20,27 +21,38 @@ const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || '';
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '';
 const SESSION_DAYS = Number(process.env.SESSION_DAYS) || 30;
 const MAX_STATE_BYTES = 2_000_000;
-const SID = 'eb_sid';
+// Prefiks __Host- (hanya HTTPS) mengunci cookie ke domain ini, Path=/, dan Secure.
+const SID = SECURE ? '__Host-eb_sid' : 'eb_sid';
+const MAX_FAILS = 5; // percobaan salah per email sebelum dikunci 15 menit
 
 const db = new JsonDB(process.env.DB_FILE ? path.resolve(ROOT, process.env.DB_FILE) : path.join(ROOT, 'data', 'db.json'));
 const google = GOOGLE_CLIENT_ID ? new OAuth2Client(GOOGLE_CLIENT_ID) : null;
 const authLimit = rateLimiter({ limit: 10, windowMs: 15 * 60 * 1000 });
+const failLimit = rateLimiter({ limit: MAX_FAILS, windowMs: 15 * 60 * 1000 });
+const loginIpLimit = rateLimiter({ limit: 30, windowMs: 15 * 60 * 1000 });
+const apiLimit = rateLimiter({ limit: 300, windowMs: 5 * 60 * 1000 });
 
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', process.env.TRUST_PROXY === '1');
 
-app.use((req, res, next) => {
-  res.set({
-    'X-Content-Type-Options': 'nosniff',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-    'X-Frame-Options': 'SAMEORIGIN',
-    // GIS butuh popup yang tetap bisa berkomunikasi dengan halaman ini.
-    'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-  });
+// Header keamanan (CSP dengan hash skrip inline, HSTS saat HTTPS, dll.) dihitung sekali saat start.
+const SEC_HEADERS = headersForFile(path.join(ROOT, 'public', 'index.html'), { https: SECURE });
+app.use((req, res, next) => { res.set(SEC_HEADERS); next(); });
+
+// Batas laju umum untuk semua API (anti-flooding / scraping).
+app.use('/api', (req, res, next) => {
+  if (!apiLimit('api:' + (req.ip || req.socket.remoteAddress))) { res.set('Retry-After', '300'); return res.status(429).json({ error: 'Terlalu banyak permintaan. Coba lagi beberapa menit lagi.' }); }
+  res.set('Cache-Control', 'no-store');
   next();
 });
-app.use(express.json({ limit: '3mb' }));
+// Hanya terima JSON untuk permintaan yang membawa body; buang kunci __proto__/constructor.
+app.use('/api', (req, res, next) => {
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method) && req.headers['content-length'] > 0 && !req.is('application/json'))
+    return res.status(415).json({ error: 'Content-Type harus application/json.' });
+  next();
+});
+app.use(express.json({ limit: '3mb', strict: true, reviver: safeReviver }));
 
 /* ---------------- sesi ---------------- */
 function prune() {
@@ -49,8 +61,11 @@ function prune() {
   db.data.sessions = db.sessions.filter(s => s.exp > now);
   return before !== db.sessions.length;
 }
-async function startSession(res, user) {
+async function startSession(res, user, req) {
   prune();
+  // Rotasi sesi: token lama di browser ini dibuang (cegah session fixation).
+  const old = req && parseCookies(req.headers.cookie)[SID];
+  if (old) db.data.sessions = db.sessions.filter(x => x.id !== sha256(old));
   const token = randomToken();
   db.sessions.push({ id: sha256(token), userId: user.id, exp: Date.now() + SESSION_DAYS * 864e5, dibuat: new Date().toISOString() });
   user.terakhirMasuk = new Date().toISOString();
@@ -71,10 +86,12 @@ function endSession(req, res) {
 
 // Lindungi permintaan yang mengubah data dari CSRF: wajib header kustom + Origin sama.
 function guard(req, res, next) {
-  if (req.get('X-EcoBriket') !== '1') return res.status(403).json({ error: 'Permintaan ditolak (header hilang).' });
+  if (req.get('X-EcoBriket') !== '1') { secLog('csrf_header_missing', { ip: ip(req), path: req.path }); return res.status(403).json({ error: 'Permintaan ditolak (header hilang).' }); }
   const origin = req.get('Origin');
-  if (origin && origin !== BASE_URL && origin !== `${req.protocol}://${req.get('host')}`)
-    return res.status(403).json({ error: 'Origin tidak diizinkan.' });
+  if (origin && origin !== BASE_URL && origin !== `${req.protocol}://${req.get('host')}`) {
+    secLog('csrf_bad_origin', { ip: ip(req), origin }); return res.status(403).json({ error: 'Origin tidak diizinkan.' });
+  }
+  if (req.get('Sec-Fetch-Site') === 'cross-site') return res.status(403).json({ error: 'Permintaan lintas situs ditolak.' });
   next();
 }
 function needUser(req, res, next) {
@@ -89,7 +106,7 @@ const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch
 app.get('/api/config', (req, res) => {
   res.set('Cache-Control', 'no-store');
   res.json({
-    app: 'ecobriket', version: '0.5.0',
+    app: 'ecobriket', version: '0.6.0',
     providers: { password: true, google: GOOGLE_CLIENT_ID || null, github: !!(GITHUB_CLIENT_ID && GITHUB_CLIENT_SECRET) },
     user: publicUser(currentUser(req)),
   });
@@ -108,27 +125,49 @@ app.post('/api/auth/register', guard, wrap(async (req, res) => {
   if (email && db.users.some(u => u.email === email)) errors.email = 'Email sudah terdaftar. Silakan masuk.';
   if (Object.keys(errors).length) return res.status(400).json({ error: 'Periksa kembali isian Anda.', fields: errors });
 
+  secLog('register', { ip: ip(req), email });
   const user = { id: newId('us'), email, ...data, passwordHash: await hashPassword(req.body.password), metode: ['password'], dibuat: new Date().toISOString(), setujuPada: new Date().toISOString() };
   db.users.push(user);
-  await startSession(res, user);
+  await startSession(res, user, req);
   res.status(201).json({ user: publicUser(user) });
 }));
 
 app.post('/api/auth/login', guard, wrap(async (req, res) => {
   const email = cleanEmail(req.body.email);
-  if (!authLimit('login:' + ip(req) + ':' + email)) return res.status(429).json({ error: 'Terlalu banyak percobaan. Coba lagi 15 menit lagi.' });
-  const user = email && db.users.find(u => u.email === email);
-  const ok = user && user.passwordHash ? await verifyPassword(String(req.body.password || ''), user.passwordHash) : (await burnTime(req.body.password), false);
-  if (!ok) {
-    const hint = user && !user.passwordHash ? ' Akun ini dibuat lewat ' + (user.googleId ? 'Google' : 'GitHub') + '.' : '';
-    return res.status(401).json({ error: 'Email atau kata sandi salah.' + hint });
+  if (!loginIpLimit('login:' + ip(req))) return res.status(429).json({ error: 'Terlalu banyak percobaan. Coba lagi 15 menit lagi.' });
+  // Penguncian per akun: 5 kali salah → dikunci 15 menit, dari IP mana pun (anti brute force/credential stuffing).
+  if (email && failLimit.count('fail:' + email) >= MAX_FAILS) {
+    secLog('login_locked', { ip: ip(req), email });
+    return res.status(429).json({ error: 'Akun dikunci sementara karena terlalu banyak percobaan gagal. Coba lagi 15 menit lagi.' });
   }
-  await startSession(res, user);
+  // Tolak tipe selain string (cegah type confusion: array/objek).
+  const password = typeof req.body.password === 'string' ? req.body.password.slice(0, 128) : '';
+  if (typeof req.body.email !== 'string' || !password) { await burnTime('x'); return res.status(401).json({ error: 'Email atau kata sandi salah.' }); }
+  const user = email && db.users.find(u => u.email === email);
+  const ok = user && user.passwordHash ? await verifyPassword(password, user.passwordHash) : (await burnTime(password), false);
+  if (!ok) {
+    if (email) failLimit('fail:' + email);
+    secLog('login_failed', { ip: ip(req), email });
+    // Pesan sama untuk email tak terdaftar & kata sandi salah (anti enumerasi akun).
+    return res.status(401).json({ error: 'Email atau kata sandi salah.' });
+  }
+  failLimit.reset('fail:' + email);
+  if (needsRehash(user.passwordHash)) user.passwordHash = await hashPassword(password);
+  await startSession(res, user, req);
   res.json({ user: publicUser(user) });
 }));
 
 app.post('/api/auth/logout', guard, wrap(async (req, res) => {
   endSession(req, res);
+  await db.save();
+  res.json({ ok: true });
+}));
+
+// Keluar dari semua perangkat (mis. bila curiga akun dibobol).
+app.post('/api/auth/logout-all', guard, needUser, wrap(async (req, res) => {
+  db.data.sessions = db.sessions.filter(s => s.userId !== req.user.id);
+  res.append('Set-Cookie', cookie(SID, '', { maxAge: 0, secure: SECURE }));
+  secLog('logout_all', { ip: ip(req), email: req.user.email });
   await db.save();
   res.json({ ok: true });
 }));
@@ -147,11 +186,12 @@ app.put('/api/auth/profile', guard, needUser, wrap(async (req, res) => {
 
 app.put('/api/auth/password', guard, needUser, wrap(async (req, res) => {
   const u = req.user;
-  if (u.passwordHash && !(await verifyPassword(String(req.body.lama || ''), u.passwordHash)))
+  if (u.passwordHash && !(typeof req.body.lama === 'string' && await verifyPassword(req.body.lama, u.passwordHash)))
     return res.status(400).json({ error: 'Kata sandi lama salah.', fields: { lama: 'Kata sandi lama salah.' } });
   const p = passwordProblem(req.body.baru, { email: u.email });
   if (p) return res.status(400).json({ error: p, fields: { baru: p } });
   u.passwordHash = await hashPassword(req.body.baru);
+  secLog('password_changed', { ip: ip(req), email: u.email });
   if (!u.metode.includes('password')) u.metode.push('password');
   // Keluarkan sesi lain setelah kata sandi diganti.
   const token = parseCookies(req.headers.cookie)[SID];
@@ -162,8 +202,9 @@ app.put('/api/auth/password', guard, needUser, wrap(async (req, res) => {
 
 app.delete('/api/auth/account', guard, needUser, wrap(async (req, res) => {
   const u = req.user;
-  if (u.passwordHash && !(await verifyPassword(String(req.body.password || ''), u.passwordHash)))
+  if (u.passwordHash && !(typeof req.body.password === 'string' && await verifyPassword(req.body.password, u.passwordHash)))
     return res.status(400).json({ error: 'Kata sandi salah.', fields: { password: 'Kata sandi salah.' } });
+  secLog('account_deleted', { ip: ip(req), email: u.email });
   db.data.users = db.users.filter(x => x.id !== u.id);
   db.data.sessions = db.sessions.filter(s => s.userId !== u.id);
   delete db.states[u.id];
@@ -194,13 +235,13 @@ app.post('/api/auth/google', guard, wrap(async (req, res) => {
   if (!authLimit('g:' + ip(req))) return res.status(429).json({ error: 'Terlalu banyak percobaan.' });
   let payload;
   try {
-    const ticket = await google.verifyIdToken({ idToken: String(req.body.credential || ''), audience: GOOGLE_CLIENT_ID });
+    const ticket = await google.verifyIdToken({ idToken: typeof req.body.credential === 'string' ? req.body.credential : '', audience: GOOGLE_CLIENT_ID });
     payload = ticket.getPayload();
   } catch {
     return res.status(401).json({ error: 'Token Google tidak valid atau kedaluwarsa.' });
   }
   const user = await upsertOAuth({ provider: 'google', providerId: payload.sub, email: (payload.email || '').toLowerCase(), emailVerified: payload.email_verified === true, nama: payload.name });
-  await startSession(res, user);
+  await startSession(res, user, req);
   res.json({ user: publicUser(user), baru: !isComplete(user) });
 }));
 
@@ -230,7 +271,7 @@ app.get('/api/auth/github/callback', wrap(async (req, res) => {
     ]);
     const primary = Array.isArray(emails) ? emails.find(e => e.primary && e.verified) || emails.find(e => e.verified) : null;
     const user = await upsertOAuth({ provider: 'github', providerId: String(gu.id), email: primary ? primary.email.toLowerCase() : '', emailVerified: !!primary, nama: gu.name || gu.login });
-    await startSession(res, user);
+    await startSession(res, user, req);
     res.redirect('/#/akun' + (isComplete(user) ? '' : '?lengkapi=1'));
   } catch (e) {
     console.error('[github]', e.message);
@@ -257,9 +298,11 @@ app.put('/api/state', guard, needUser, wrap(async (req, res) => {
 app.use('/api', (req, res) => res.status(404).json({ error: 'Endpoint tidak ditemukan.' }));
 
 /* ---------------- berkas statis ---------------- */
-app.use(express.static(path.join(ROOT, 'public'), { extensions: ['html'], maxAge: 0 }));
+app.use(express.static(path.join(ROOT, 'public'), { extensions: ['html'], maxAge: 0, dotfiles: 'deny', index: 'index.html' }));
 
 app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'JSON tidak valid.' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Data terlalu besar.' });
   console.error(err);
   res.status(err.status || 500).json({ error: err.status ? err.message : 'Terjadi kesalahan di server.' });
 });

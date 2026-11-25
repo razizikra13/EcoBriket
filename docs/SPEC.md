@@ -377,3 +377,9 @@ src/
 | AC48 | Masuk dengan kata sandi salah | Ditolak "Email atau kata sandi salah" |
 | AC49 | `.env` tanpa GOOGLE_CLIENT_ID | Tombol Google nonaktif berlabel "belum dikonfigurasi"; endpoint menjawab 501 |
 | AC50 | `git status` setelah menjalankan aplikasi | `.env` dan `data/db.json` tidak muncul |
+
+---
+
+## 13. Pembaruan v0.6 — Pengamanan (OWASP Top 10)
+
+Detail di `SECURITY.md`. Tambahan: CSP berbasis hash + header keamanan (Express & `vercel.json`), scrypt N=2¹⁵ r=8 p=3 dengan rehash otomatis, penguncian akun 5×/15 menit, batas laju API, anti enumerasi, rotasi sesi, keluar dari semua perangkat, cek tipe input (perbaikan *type confusion* kata sandi berupa array), anti prototype pollution, penolakan markup di profil, daftar kata sandi umum, anti CSV injection, log kejadian keamanan, `npm audit` 0 celah (google-auth-library 11). 12 uji keamanan baru di `test/security.test.js`.

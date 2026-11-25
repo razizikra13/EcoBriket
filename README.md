@@ -72,7 +72,11 @@ server/security.js  hash scrypt, token sesi, rate limit, cookie
 server/validate.js  validasi profil & kata sandi
 server/db.js        penyimpanan JSON atomik (data/db.json)
 public/index.html   aplikasi (HTML/CSS/JS tanpa build)
-test/api.test.js    uji API (node:test)
+test/*.test.js      uji API & keamanan (node:test)
+server/headers.js   header keamanan & CSP
+scripts/build-headers.js  menulis vercel.json
+vercel.json         header keamanan untuk Vercel
+SECURITY.md         kebijakan & pemetaan OWASP
 ```
 
 ## API
@@ -90,13 +94,19 @@ test/api.test.js    uji API (node:test)
 
 Permintaan yang mengubah data wajib membawa header `X-EcoBriket: 1` (perlindungan CSRF bersama cookie `SameSite=Lax`).
 
-## Keamanan & batasan
+## Keamanan
 
-- Kata sandi di-hash dengan **scrypt** + salt acak; sesi memakai token acak di cookie `HttpOnly`, disimpan sebagai hash SHA-256.
-- Batas percobaan masuk/daftar: 10 kali per 15 menit.
-- **Belum ada**: reset kata sandi lewat email, verifikasi email, 2FA, dan database sungguhan. `data/db.json` cocok untuk prototipe satu server, bukan untuk ribuan pengguna.
-- Untuk dipakai publik: pasang HTTPS (ubah `BASE_URL` ke `https://…`, cookie otomatis `Secure`), ganti penyimpanan ke PostgreSQL/SQLite, dan cadangkan data rutin.
-- Harga ditampilkan dalam Rupiah; belum ada konversi mata uang untuk pengguna luar negeri.
+Ringkasan lengkap dan pemetaan ke OWASP Top 10 ada di **[SECURITY.md](SECURITY.md)**. Intinya:
+
+- Kata sandi di-hash **scrypt**, sesi token acak di cookie `HttpOnly` + `SameSite`, rotasi sesi saat login.
+- Anti brute force: akun dikunci 15 menit setelah 5 kali salah; batas laju per IP.
+- Anti XSS: escape keluaran + Content-Security-Policy berbasis hash (juga di Vercel lewat `vercel.json`).
+- Anti CSRF, prototype pollution, CSV injection, path traversal; tidak ada SQL sehingga SQL injection tidak berlaku (aturan parameterized query sudah ditulis untuk migrasi database).
+- 21 uji otomatis (`npm test`) termasuk 12 uji keamanan; `npm audit` = 0 celah.
+
+Setelah mengubah `public/index.html`, jalankan `npm run headers` agar hash CSP di `vercel.json` ikut diperbarui (kalau lupa, `npm test` akan gagal).
+
+**Batasan:** belum ada verifikasi email, reset sandi lewat email, 2FA, dan database sungguhan. Untuk publik: pasang HTTPS dan database terkelola. Harga masih dalam Rupiah.
 
 ## Lisensi
 
