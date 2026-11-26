@@ -11,6 +11,7 @@ Katalog, pencari, dan alat produksi **briket bio-arang dari biomassa** (tempurun
 - Produksi 6 tahap, timer jemur, kalkulator formulasi & energi, planner, logbook riset.
 - **Akun**: daftar/masuk dengan **email + kata sandi**, **Google**, atau **GitHub**; data lengkap (negara, provinsi/region, kota, kecamatan, desa, kode pos, telepon, usaha, peran, bahasa).
 - Data tiap pengguna (favorit, keranjang, pesanan, dll.) tersimpan di server dan ikut ke perangkat lain.
+- **3D interaktif** (Three.js, dibundel lokal): hero beranda bisa diputar dengan seret/tombol panah, tab 3D di halaman detail, dan foto katalog berupa render 3D per produk (latar warna per bahan baku). Otomatis kembali ke ilustrasi SVG bila WebGL tidak tersedia.
 - Ekspor/impor JSON & CSV, ID/EN.
 
 ## Menjalankan di localhost
@@ -72,6 +73,7 @@ server/security.js  hash scrypt, token sesi, rate limit, cookie
 server/validate.js  validasi profil & kata sandi
 server/db.js        penyimpanan JSON atomik (data/db.json)
 public/index.html   aplikasi (HTML/CSS/JS tanpa build)
+src/eco3d.js        sumber adegan 3D (Three.js) → public/js/eco3d.js
 test/*.test.js      uji API & keamanan (node:test)
 server/headers.js   header keamanan & CSP
 scripts/build-headers.js  menulis vercel.json
@@ -104,7 +106,7 @@ Ringkasan lengkap dan pemetaan ke OWASP Top 10 ada di **[SECURITY.md](SECURITY.m
 - Anti CSRF, prototype pollution, CSV injection, path traversal; tidak ada SQL sehingga SQL injection tidak berlaku (aturan parameterized query sudah ditulis untuk migrasi database).
 - 21 uji otomatis (`npm test`) termasuk 12 uji keamanan; `npm audit` = 0 celah.
 
-Setelah mengubah `public/index.html`, jalankan `npm run headers` agar hash CSP di `vercel.json` ikut diperbarui (kalau lupa, `npm test` akan gagal).
+Setelah mengubah `src/eco3d.js`, jalankan `npm run build` (bundel 3D + header). Setelah mengubah `public/index.html`, jalankan `npm run headers` agar hash CSP di `vercel.json` ikut diperbarui (kalau lupa, `npm test` akan gagal).
 
 **Batasan:** belum ada verifikasi email, reset sandi lewat email, 2FA, dan database sungguhan. Untuk publik: pasang HTTPS dan database terkelola. Harga masih dalam Rupiah.
 

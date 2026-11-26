@@ -1,6 +1,6 @@
 {
   "name": "ecobriket",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "EcoBriket \u2014 katalog, pencari, dan alat produksi briket bio-arang biomassa. Server lokal dengan akun (kata sandi, Google, GitHub).",
   "type": "module",
   "main": "server/index.js",
@@ -10,7 +10,9 @@
     "test": "node --test test/*.test.js",
     "headers": "node scripts/build-headers.js",
     "audit": "npm audit --omit=dev",
-    "check": "npm run headers && npm test && npm audit --omit=dev"
+    "check": "npm run headers && npm test && npm audit --omit=dev",
+    "build:3d": "esbuild src/eco3d.js --bundle --minify --format=esm --target=es2020 --legal-comments=none --outfile=public/js/eco3d.js",
+    "build": "npm run build:3d && npm run headers"
   },
   "engines": {
     "node": ">=20.12"
@@ -19,5 +21,9 @@
   "dependencies": {
     "express": "^4.22.3",
     "google-auth-library": "^11.3.4"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "three": "^0.187.0"
   }
 }

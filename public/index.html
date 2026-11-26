@@ -549,6 +549,40 @@ button[aria-busy="true"]{opacity:.7;cursor:progress}
 @keyframes fxSwing{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}55%{transform:rotate(9deg)}80%{transform:rotate(-4deg)}}
 @keyframes fxRing{0%,100%{transform:rotate(0)}15%{transform:rotate(14deg)}30%{transform:rotate(-12deg)}45%{transform:rotate(8deg)}60%{transform:rotate(-5deg)}}
 @keyframes fxPulse{0%{stroke-width:3}50%{stroke-width:7;stroke-opacity:.5}100%{stroke-width:3}}
+/* ===== 3D stage ===== */
+.stage3d{position:relative;width:100%;aspect-ratio:520/440;border-radius:24px;isolation:isolate}
+.hero-art .stage3d{position:absolute;inset:0;aspect-ratio:auto}
+.hero-art .stage3d.on{background:radial-gradient(circle at 56% 55%,#D7E8D8 0 37%,transparent 37.4%),radial-gradient(circle at 81% 20%,#F4E3BC 0 9.6%,transparent 10%)}
+.hero-art.is-3d>svg{visibility:hidden}
+.stage3d>svg{position:absolute;inset:0;width:100%;height:100%;transition:opacity .5s}
+.stage3d.on>svg{opacity:0;pointer-events:none}
+.stage3d-cv{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;touch-action:pan-y;cursor:grab;outline:none;border-radius:inherit;animation:p3dIn .7s var(--ease)}
+.stage3d.is-drag .stage3d-cv{cursor:grabbing}
+.stage3d-cv:focus-visible{box-shadow:0 0 0 3px var(--leaf)}
+.stage3d-tip{position:absolute;left:0;top:0;z-index:5;pointer-events:none;background:#1C2024;color:#fff;font-size:.78rem;font-weight:600;padding:6px 10px;border-radius:9px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.stage3d-ui{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;z-index:4;opacity:0;transition:opacity .4s}
+.stage3d.on .stage3d-ui{opacity:1}
+.stage3d-hint{display:inline-flex;gap:6px;align-items:center;white-space:nowrap;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);border-radius:999px;padding:7px 13px;font-size:.8rem;font-weight:600;color:var(--forest);box-shadow:var(--sh);transition:opacity .4s,transform .4s}
+.stage3d.touched .stage3d-hint{opacity:0;transform:translateY(6px);pointer-events:none;width:0;padding:0;overflow:hidden}
+.stage3d-btn{width:40px;height:40px;display:grid;place-items:center;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.9);color:var(--forest);cursor:pointer;box-shadow:var(--sh);transition:background .2s,transform .2s}
+.stage3d-btn:hover{background:var(--mint)}
+.stage3d-ui svg,.stage3d-tip svg{width:15px!important;height:15px!important;flex:none;display:inline-block!important}
+.stage3d-btn[aria-pressed="true"]{background:var(--forest);color:#fff;border-color:var(--forest)}
+.stage3d-btn:focus-visible{outline:3px solid var(--leaf);outline-offset:2px}
+.hero-art.is-3d .float-chip{left:0!important;top:0!important;right:auto!important;bottom:auto!important;animation:none!important;transition:opacity .3s;will-change:transform;z-index:3;pointer-events:none}
+.viewer.stage3d{aspect-ratio:4/3;background:radial-gradient(circle at 48% 44%,rgba(255,255,255,.6) 0 36%,transparent 36.4%),linear-gradient(160deg,var(--bg1),var(--bg2));overflow:hidden}
+.p3d{width:100%;height:100%;object-fit:cover;display:block;animation:p3dIn .6s var(--ease)}
+.p3d-host{width:100%;height:100%}
+.gal-main .p3d-host,.gal-main .p3d-host .p3d{border-radius:inherit}
+.pimg .p3d{transition:transform .5s var(--ease)}
+.pcard:hover .pimg .p3d{transform:scale(1.06)}
+.p3d-tag{position:absolute;left:10px;bottom:10px;z-index:2;display:inline-flex;gap:4px;align-items:center;background:rgba(28,32,36,.62);color:#fff;font-size:.66rem;font-weight:700;letter-spacing:.02em;padding:3px 8px;border-radius:999px;backdrop-filter:blur(4px);pointer-events:none}
+.gal-main{position:relative}
+.thumbs button .t3d{position:relative;display:block}
+.thumbs button .t3d b{position:absolute;inset:0;display:grid;place-items:center;font:800 1.15rem var(--head);color:#fff;background:linear-gradient(135deg,rgba(31,92,64,.75),rgba(232,162,58,.65));border-radius:inherit}
+@keyframes p3dIn{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.stage3d-cv,.p3d{animation:none}.pcard:hover .pimg .p3d{transform:none}}
+@media (max-width:600px){.hero-art.is-3d .float-chip{display:none!important}.stage3d-hint{display:none!important}.stage3d-ui{left:auto;right:4px;bottom:2px;transform:none}.stage3d-btn{width:36px;height:36px}.hero-art.is-3d .float-chip{padding:6px 9px;gap:6px}.hero-art.is-3d .float-chip b{font-size:.82rem}.hero-art.is-3d .float-chip .tiny{font-size:.62rem}.hero-art.is-3d .float-chip .ic{width:28px;height:28px}}
 </style>
 </head>
 <body>
@@ -1331,10 +1365,10 @@ V.kalkulator = {
 };
 
 /* ---- briquette catalogue ---- */
-const STOK_F0 = () => ({q:'', g:'', m:'', u:'', s:'', mb:'', sort:'na'});
+const STOK_F0 = () => ({q:'', g:'', m:'', b:'', u:'', s:'', mb:'', sort:'na'});
 function filterProduk(f) {
   const q = (f.q || '').trim().toLowerCase();
-  const a = S.produk.filter(p => (!q || [p.nama, p.gampong, p.deskripsi, el('bahan', p.bahanBaku), p.sumberVerifikasi].join(' ').toLowerCase().includes(q)) && (!f.g || p.gampong === f.g) && (!f.m || p.bahanBaku === f.m) && (!f.u || (p.cocokUntuk || []).includes(f.u)) && (!f.s || p.statusStandarSni === f.s) && (!f.mb || num(p.lamaBakarMenit) >= num(f.mb)));
+  const a = S.produk.filter(p => (!q || [p.nama, p.gampong, p.deskripsi, el('bahan', p.bahanBaku), p.sumberVerifikasi].join(' ').toLowerCase().includes(q)) && (!f.g || p.gampong === f.g) && (!f.m || p.bahanBaku === f.m) && (!f.b || p.kategoriBentuk === f.b) && (!f.u || (p.cocokUntuk || []).includes(f.u)) && (!f.s || p.statusStandarSni === f.s) && (!f.mb || num(p.lamaBakarMenit) >= num(f.mb)));
   const cmp = {na:(x,y)=>x.nama.localeCompare(y.nama), pa:(x,y)=>x.hargaPerKg-y.hargaPerKg, pd:(x,y)=>y.hargaPerKg-x.hargaPerKg, sd:(x,y)=>y.stokKg-x.stokKg, bd:(x,y)=>y.lamaBakarMenit-x.lamaBakarMenit, nd:(x,y)=>nkOf(y)-nkOf(x)};
   return a.sort(cmp[f.sort] || cmp.na);
 }
@@ -1345,10 +1379,12 @@ V.stok = {
     const f = S.ui.s && 'm' in S.ui.s ? S.ui.s : (S.ui.s = STOK_F0());
     if (q.get('bahan')) { Object.assign(f, STOK_F0(), {m: q.get('bahan')}); }
     if (q.get('pakai')) { Object.assign(f, STOK_F0(), {u: q.get('pakai')}); }
+    if (q.get('bentuk')) { Object.assign(f, STOK_F0(), {b: q.get('bentuk')}); }
     return `${pageHead(t('s_title'), '', `<div class="row">${simBadge()}<a class="btn amber" href="#/cari">${ico('search',16)} ${t('nav_find')}</a></div>`)}<p class="notice">${t('s_note')}</p>
     <div class="filters" role="search">
       <div class="q"><label for="sq">${t('f_q').replace('…','')}</label><input id="sq" type="search" value="${esc(f.q)}" placeholder="${t('f_q')}"></div>
       <div><label for="sm">${t('bahan')}</label><select id="sm"><option value="">${t('f_allbahan')}</option>${opts('bahan').map(([v,l]) => `<option value="${v}" ${f.m===v?'selected':''}>${l}</option>`).join('')}</select></div>
+      <div><label for="sb">${tl(['Bentuk','Shape'])}</label><select id="sb"><option value="">${tl(['Semua bentuk','All shapes'])}</option>${opts('bentuk').map(([v,l]) => `<option value="${v}" ${f.b===v?'selected':''}>${l}</option>`).join('')}</select></div>
       <div><label for="su">${t('use')}</label><select id="su"><option value="">${t('f_alluse')}</option>${opts('pakai').map(([v,l]) => `<option value="${v}" ${f.u===v?'selected':''}>${l}</option>`).join('')}</select></div>
       <div><label for="ss">${t('status')}</label><select id="ss"><option value="">${t('f_alls')}</option>${opts('stProduk').filter(x => x[0] !== 'na').map(([v,l]) => `<option value="${v}" ${f.s===v?'selected':''}>${l}</option>`).join('')}</select></div>
       <div><label for="smb">${t('f_minburn')}</label><input id="smb" type="number" min="0" step="10" value="${esc(f.mb)}" placeholder="0"></div>
@@ -1360,7 +1396,7 @@ V.stok = {
   bind() {
     const f = S.ui.s;
     const draw = () => { const a = filterProduk(f); $('#scount').textContent = `${a.length} / ${S.produk.length} ${t('found')}`; $('#sgrid').innerHTML = a.length ? a.map((p,i) => produkCard(p, i)).join('') : `<div class="empty" style="grid-column:1/-1">${t('none')}</div>`; };
-    [['#sq','q','input'],['#sg','g','change'],['#sm','m','change'],['#su','u','change'],['#ss','s','change'],['#smb','mb','input'],['#so','sort','change']].forEach(([s,k,ev]) => $(s).addEventListener(ev, e => { f[k] = e.target.value; draw(); }));
+    [['#sq','q','input'],['#sg','g','change'],['#sm','m','change'],['#sb','b','change'],['#su','u','change'],['#ss','s','change'],['#smb','mb','input'],['#so','sort','change']].forEach(([s,k,ev]) => $(s).addEventListener(ev, e => { f[k] = e.target.value; draw(); }));
     $('#sreset').onclick = () => { S.ui.s = STOK_F0(); if (location.hash !== '#/stok') location.hash = '#/stok'; else render(); };
     draw();
   }
@@ -1751,6 +1787,86 @@ function openWA(id, type) {
   $('#waMsg').addEventListener('input', upd); upd();
 }
 
+/* ======================= 3D (hero interaktif, viewer produk, foto render 3D katalog) ======================= */
+const BG3D = {'ampas-pala':['#F8E6D2','#EBC6A0'],'tempurung-kelapa':['#F3E7DA','#DCC0A2'],'cangkang-sawit':['#E6EEDD','#C3D4AE'],'sekam-padi':['#F8F0D2','#EBD58E'],'serbuk-gergaji':['#F4E8D7','#DFC29B'],'tongkol-jagung':['#FBF3CF','#F0D77A'],'kulit-pinang':['#FCE8D2','#F2BF8A'],'campuran':['#E4F1E7','#B9D8C2']};
+const bg3d = k => { const [a, b] = BG3D[k] || BG3D.campuran; return `--bg1:${a};--bg2:${b}`; };
+const E3D = {
+  mod: null, p: null, failed: false, stages: new Map(), cache: new Map(), queue: [], busy: false, auto: true,
+  can() { if (this.failed || !/^https?:$/.test(location.protocol)) return false; try { const c = document.createElement('canvas'); return !!c.getContext('webgl2'); } catch (e) { return false; } },
+  load() { return this.p || (this.p = import('/js/eco3d.js').then(m => (this.mod = m.supported() ? m : null)).catch(() => { this.failed = true; return null; })); },
+  prod(p) { const [w, h] = dims(p); return {id: p.id, name: shortName(p), shape: p.kategoriBentuk, bahan: p.bahanBaku, w, h}; },
+  key(p) { const [w, h] = dims(p); return ['v2', p.id, p.kategoriBentuk, p.bahanBaku, w, h].join('|'); },
+  names() { return {cyl: tl(['Silinder berlubang · klik untuk lihat katalog','Hollow cylinder · click to browse']), hot: tl(['Briket menyala · bara stabil','Burning briquette · steady embers']), hex: tl(['Heksagonal · klik untuk lihat katalog','Hexagonal · click to browse']), cube: tl(['Kubus · klik untuk lihat katalog','Cube · click to browse'])}; },
+  hydrate() {
+    clearTimeout(this._h); this._h = setTimeout(() => this._hydrate(), 30);
+  },
+  async _hydrate() {
+    // Bersihkan stage yang elemennya sudah hilang dari halaman.
+    for (const [el, st] of this.stages) if (!document.contains(el)) { st.dispose(); this.stages.delete(el); }
+    const stages = $$('.stage3d[data-stage]:not([data-on])'), photos = $$('[data-p3d]:not([data-on])');
+    if (!stages.length && !photos.length) return;
+    if (!this.can()) return;
+    const m = await this.load(); if (!m) return;
+    for (const el of stages) {
+      if (!document.contains(el)) continue; el.dataset.on = '1';
+      try {
+        let st;
+        if (el.dataset.stage === 'hero') {
+          const p = byId('produk', 'pr-04') || S.produk[0];
+          st = await m.mountHero(el, {aria: tl(['Model 3D kemasan dan briket bio-arang. Seret atau pakai tombol panah untuk memutar.','3D model of a bio-charcoal pack and briquettes. Drag or use arrow keys to rotate.']), names: this.names(),
+            label: {lines: [tl(['Briket','Briquettes']), tl(['Bio-Arang','Bio-charcoal'])], burn: `±${fmt(p ? p.lamaBakarMenit : 180, 0)} ${tl(['mnt/butir','min/piece'])}`, net: tl(['Isi 2 kg · contoh','Net 2 kg · sample'])},
+            onPick: shape => { if (shape) location.hash = '#/stok?bentuk=' + shape; }});
+          el.closest('.hero-art').classList.add('is-3d');
+        } else {
+          const p = byId('produk', el.dataset.pid); if (!p) continue;
+          st = m.mountViewer(el, this.prod(p), {aria: tl(['Model 3D ','3D model of ']) + shortName(p) + tl(['. Seret untuk memutar.','. Drag to rotate.'])});
+        }
+        st.setAuto(this.auto); this.stages.set(el, st); el.classList.add('on');
+      } catch (e) { el.dataset.on = 'x'; }
+    }
+    photos.forEach(el => { el.dataset.on = '1'; this.queue.push(el); });
+    this._drain();
+  },
+  async _drain() {
+    if (this.busy) return; this.busy = true;
+    while (this.queue.length) {
+      const el = this.queue.shift(); if (!document.contains(el)) continue;
+      const p = byId('produk', el.dataset.p3d); if (!p) continue;
+      const k = this.key(p); let url = this.cache.get(k);
+      if (!url) { try { url = sessionStorage.getItem('eb3d:' + k); } catch (e) {} }
+      if (!url) { await new Promise(r => (window.requestIdleCallback || setTimeout)(r, {timeout: 300})); try { url = await this.mod.photo(this.prod(p)); try { sessionStorage.setItem('eb3d:' + k, url); } catch (e) {} } catch (e) { continue; } }
+      this.cache.set(k, url);
+      const svg = el.querySelector('svg'); if (!svg) continue;
+      const img = new Image(); img.className = 'p3d'; img.alt = tl(['Render 3D ','3D render of ']) + shortName(p); img.decoding = 'async'; img.src = url;
+      img.width = 640; img.height = 480; svg.replaceWith(img);
+      const host = el.closest('.pimg, .gal-main, .thumb3d') || el;
+      if (!host.querySelector('.p3d-tag')) host.insertAdjacentHTML('beforeend', `<span class="p3d-tag" aria-hidden="true">${ico('box', 12)} ${tl(['Render 3D','3D render'])}</span>`);
+    }
+    this.busy = false;
+  },
+  ui(e) {
+    const b = e.target.closest('[data-3d]'); if (!b) return;
+    const el = b.closest('.stage3d'), st = this.stages.get(el); if (!st) return;
+    if (b.dataset['3d'] === 'reset') st.reset();
+    if (b.dataset['3d'] === 'spin') { this.auto = !this.auto; this.stages.forEach(s => s.setAuto(this.auto)); $$('[data-3d="spin"]').forEach(x => x.setAttribute('aria-pressed', this.auto)); }
+  },
+  init() {
+    const go = () => this.hydrate();
+    ['app', 'modal'].forEach(id => { const el = document.getElementById(id); if (el) new MutationObserver(go).observe(el, {childList: true, subtree: true}); });
+    document.addEventListener('click', e => this.ui(e));
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) this.auto = false;
+    go();
+  }
+};
+const stageUI = () => `<div class="stage3d-tip" hidden></div><div class="stage3d-ui"><span class="stage3d-hint">${ico('cycle', 15)} ${tl(['Seret untuk memutar 360°','Drag to rotate 360°'])}</span><button type="button" class="stage3d-btn" data-3d="spin" aria-pressed="${E3D.auto}" aria-label="${esc(tl(['Putar otomatis','Auto-rotate']))}" title="${esc(tl(['Putar otomatis','Auto-rotate']))}">${ico('play', 15)}</button><button type="button" class="stage3d-btn" data-3d="reset" aria-label="${esc(tl(['Kembalikan sudut','Reset view']))}" title="${esc(tl(['Kembalikan sudut','Reset view']))}">${ico('cycle', 15)}</button></div>`;
+function galHTML(p, v) {
+  if (v === '3d') return `<div class="stage3d viewer" data-stage="viewer" data-pid="${esc(p.id)}" style="${bg3d(p.bahanBaku)}">${art(p, 'produk')}${stageUI()}</div>`;
+  if (v === 'produk') return `<div class="p3d-host" data-p3d="${esc(p.id)}">${art(p, 'produk')}</div>`;
+  return art(p, v);
+}
+
+const thumbArt = (p, v) => v === '3d' ? `<span class="t3d">${art(p, 'produk')}<b>3D</b></span>` : art(p, v);
+
 /* ======================= briquette art generator ======================= */
 let _sv = 0;
 const BAHAN_TINT = {'ampas-pala':'#EFE7D4','tempurung-kelapa':'#EBE1D5','cangkang-sawit':'#E3E8DC','sekam-padi':'#F3EBD1','serbuk-gergaji':'#EFE5D7','tongkol-jagung':'#F4EDCF','kulit-pinang':'#F2E4D4','campuran':'#E3EFE5'};
@@ -1829,6 +1945,7 @@ function pouch(cx, t, W, H, lines, weight, burn) {
 }
 function wrapLines(s, n = 16, max = 2) { const out = []; let cur = ''; String(s).split(/\s+/).forEach(w => { if ((cur + ' ' + w).trim().length > n && cur) { out.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }); if (cur) out.push(cur); if (out.length > max) { out.length = max; out[max-1] = out[max-1].replace(/.{0,2}$/, '…'); } return out; }
 function art(p, view = 'produk') {
+  if (view === '3d') view = 'produk';
   const sh = p.kategoriBentuk, tint = BAHAN_TINT[p.bahanBaku] || '#E3EFE5', [dw, dh] = dims(p);
   const k = Math.min((sh === 'bantal' ? 64 : sh === 'kubus' ? 54 : 54) / dw, (sh === 'bantal' ? 40 : 108) / dh, 2); const w = dw * k, h = (sh === 'kubus' ? dw : dh) * k;
   const lab = esc(shortName(p)) + ' — ' + esc(view);
@@ -1920,7 +2037,7 @@ const MAXBURN = () => Math.max(240, ...S.produk.map(x => num(x.lamaBakarMenit)))
 const favBtn = (id, tipe) => `<button type="button" class="fav" data-fav="${esc(id)}" data-tipe="${tipe}" aria-pressed="${isFav(id)}" aria-label="${esc(tl(['Simpan ke favorit','Save to watchlist']))}" title="${esc(tl(['Favorit','Watchlist']))}">${ico('heart', 18)}</button>`;
 const cmpBtn = id => `<button type="button" class="cmp-tg" data-cmp="${esc(id)}" aria-pressed="${S.compare.includes(id)}" aria-label="${esc(tl(['Bandingkan','Compare']))}" title="${esc(tl(['Bandingkan','Compare']))}">${ico('cmp', 18)}</button>`;
 const produkCard = (p, i) => `<article class="pcard reveal">
-  <div class="pimg"><a href="#/briket/${esc(p.id)}" tabindex="-1" aria-hidden="true">${art(p)}</a>${(p.statusData || 'contoh') === 'contoh' ? `<span class="tag">${tl(['CONTOH','SAMPLE'])}</span>` : ''}${favBtn(p.id, 'produk')}
+  <div class="pimg"><a href="#/briket/${esc(p.id)}" tabindex="-1" aria-hidden="true" data-p3d="${esc(p.id)}">${art(p)}</a>${(p.statusData || 'contoh') === 'contoh' ? `<span class="tag">${tl(['CONTOH','SAMPLE'])}</span>` : ''}${favBtn(p.id, 'produk')}
     <button type="button" class="btn sm light qv" data-quick="${esc(p.id)}">${ico('eye', 16)} ${tl(['Lihat cepat','Quick view'])}</button></div>
   <div class="pbody">
     <div class="pcat">${esc(el('bahan', p.bahanBaku))} · ${esc(el('bentuk', p.kategoriBentuk))}</div>
@@ -1984,17 +2101,17 @@ function renderCmpBar() {
   bar.hidden = false;
   bar.innerHTML = `${ps.map(p => `<span class="th" title="${esc(shortName(p))}">${art(p)}</span>`).join('')}<span class="small" style="white-space:nowrap">${ps.length}/3</span><a class="btn amber sm" href="#/bandingkan">${ico('cmp', 16)} ${tl(['Bandingkan','Compare'])}</a><button type="button" class="x" style="color:#fff" data-cmpclear aria-label="${esc(tl(['Kosongkan','Clear']))}">×</button>`;
 }
-const VIEWS = [['produk',['Produk','Product']],['kemasan',['Kemasan','Pack']],['ukuran',['Ukuran','Size']],['nyala',['Menyala','Burning']]];
+const VIEWS = [['3d',['3D','3D']],['produk',['Produk','Product']],['kemasan',['Kemasan','Pack']],['ukuran',['Ukuran','Size']],['nyala',['Menyala','Burning']]];
 function openQuick(id) {
   const p = byId('produk', id); if (!p) return;
-  openModal(shortName(p), `<div class="two"><div><div class="gal-main" id="qvMain">${art(p, 'produk')}</div><div class="thumbs">${VIEWS.map(([v, l], i) => `<button type="button" data-qview="${v}" aria-pressed="${i === 0}">${art(p, v)}<span>${tl(l)}</span></button>`).join('')}</div></div>
+  openModal(shortName(p), `<div class="two"><div><div class="gal-main" id="qvMain">${galHTML(p, 'produk')}</div><div class="thumbs">${VIEWS.map(([v, l], i) => `<button type="button" data-qview="${v}" aria-pressed="${v === 'produk'}">${thumbArt(p, v)}<span>${tl(l)}</span></button>`).join('')}</div></div>
     <div style="display:flex;flex-direction:column;gap:12px"><div class="row" style="gap:6px">${badge('stProduk', p.statusStandarSni)}${demoBadge(p)}</div>
     <div class="burnhero"><span class="ic">${ico('clock', 24)}</span><div><b>±${fmt(p.lamaBakarMenit,0)} ${tl(['menit','min'])}</b><div class="small" style="color:#B9BDC1">${tl(['per butir','per piece'])} · ${fmt(p.beratButirGram,0)} g · ${tl(['simulasi','simulated'])}</div></div></div>
     <div class="facts"><div>${t('nk')}<b>${fmt(nkOf(p),0)} kal/g</b></div><div>${t('asap')}<b>${esc(el('asap', p.tingkatAsap))}</b></div><div>${t('ukuran')}<b>${esc(dimText(p))}</b></div><div>${t('price')}<b>${rp(p.hargaPerKg)}/kg</b></div></div>
     <p class="small" style="margin:0">${esc(p.deskripsi)}</p>
     <div class="row"><button type="button" class="btn primary" data-add="${esc(p.id)}">${ico('bag', 18)} ${tl(['Tambah 1 kg','Add 1 kg'])}</button><a class="btn" href="#/briket/${esc(p.id)}" data-close>${t('detail')} →</a></div></div></div>`, ' ');
   $('#modal').classList.add('wide');
-  $$('[data-qview]').forEach(b => b.onclick = () => { $('#qvMain').innerHTML = art(p, b.dataset.qview); $$('[data-qview]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+  $$('[data-qview]').forEach(b => b.onclick = () => { $('#qvMain').innerHTML = galHTML(p, b.dataset.qview); $$('[data-qview]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
 }
 function openSearch() {
   openModal(tl(['Cari briket & produsen','Search briquettes & producers']), `<label for="gsq">${tl(['Kata kunci (nama, bahan baku, gampong)','Keyword (name, feedstock, village)'])}</label><input id="gsq" type="search" autocomplete="off" placeholder="${esc(tl(['mis. tempurung, Kuta Baro, kubus…','e.g. coconut, Kuta Baro, cube…']))}"><div class="sres" id="gsr" style="margin-top:12px" aria-live="polite"></div>`, ' ');
@@ -2070,9 +2187,9 @@ V.home = {
           <p class="lead">${t('h_lead')}</p>
           <div class="row"><a class="btn primary pill" href="#/stok">${ico('grid', 18)} ${t('h_cta2')}</a><a class="btn pill" href="#/cari">${ico('search', 18)} ${t('h_cta1')}</a></div>
         </div>
-        <div class="hero-art reveal">${heroSVG()}
-          <div class="float-chip" style="left:0;top:8%"><span class="ic">${ico('clock', 18)}</span><span><b>116–146 ${tl(['menit','min'])}</b><span class="tiny muted">${tl(['nyala briket tempurung','coconut-shell burn time'])} · R3, R1</span></span></div>
-          <div class="float-chip" style="right:0;bottom:22%;animation-delay:-2.5s"><span class="ic" style="background:#E3EFE5;color:var(--forest)">${ico('flame', 18)}</span><span><b>6.674 kal/g</b><span class="tiny muted">${tl(['cangkang sawit','palm kernel shell'])} · R6</span></span></div>
+        <div class="hero-art reveal">${heroSVG()}<div class="stage3d" data-stage="hero">${stageUI()}</div>
+          <div class="float-chip" data-anchor="burn" style="left:0;top:8%"><span class="ic">${ico('clock', 18)}</span><span><b>116–146 ${tl(['menit','min'])}</b><span class="tiny muted">${tl(['nyala briket tempurung','coconut-shell burn time'])} · R3, R1</span></span></div>
+          <div class="float-chip" data-anchor="cal" style="right:0;bottom:22%;animation-delay:-2.5s"><span class="ic" style="background:#E3EFE5;color:var(--forest)">${ico('flame', 18)}</span><span><b>6.674 kal/g</b><span class="tiny muted">${tl(['cangkang sawit','palm kernel shell'])} · R6</span></span></div>
         </div>
       </div>
       <div class="trust">
@@ -2168,7 +2285,7 @@ V.briket = {
   render(id) {
     const p = byId('produk', id);
     if (!p) return `<p class="empty">${t('notfound')}</p><a class="btn" href="#/stok">${t('back')}</a>`;
-    const view = S.ui.view || 'produk', tab = S.ui.btab || 'sim';
+    const view = S.ui.view || (E3D.can() ? '3d' : 'produk'), tab = S.ui.btab || 'sim';
     const prod = p.produsenId ? byId('pabrik', p.produsenId) : null;
     const nc = S.ui.nc || {use: (p.cocokUntuk || [])[0] || 'tungku-usaha', jam: 6, tungku: 1};
     const similar = S.produk.filter(x => x.id !== p.id && (x.bahanBaku === p.bahanBaku || (x.cocokUntuk || []).some(u => (p.cocokUntuk || []).includes(u)))).slice(0, 4);
@@ -2176,9 +2293,9 @@ V.briket = {
     return `<div class="crumb" style="margin-bottom:14px"><a href="#/">${t('nav_home')}</a> / <a href="#/stok">${t('nav_stock')}</a> / ${esc(shortName(p))}</div>
     <div class="dgrid">
       <div>
-        <div class="gal-main" id="galMain">${art(p, view)}</div>
-        <div class="thumbs" role="group" aria-label="${esc(tl(['Pilih tampilan','Choose view']))}">${VIEWS.map(([v, l]) => `<button type="button" data-view="${v}" aria-pressed="${v === view}">${art(p, v)}<span>${tl(l)}</span></button>`).join('')}</div>
-        <p class="tiny muted" style="margin-top:8px">${tl(['Ilustrasi digital dari bentuk dan ukuran yang tercatat, bukan foto produk.','Digital illustration from the recorded shape and size, not a product photo.'])}</p>
+        <div class="gal-main" id="galMain">${galHTML(p, view)}</div>
+        <div class="thumbs" role="group" aria-label="${esc(tl(['Pilih tampilan','Choose view']))}">${VIEWS.map(([v, l]) => `<button type="button" data-view="${v}" aria-pressed="${v === view}">${thumbArt(p, v)}<span>${tl(l)}</span></button>`).join('')}</div>
+        <p class="tiny muted" style="margin-top:8px">${tl(['Ilustrasi & render 3D digital dari bentuk dan ukuran yang tercatat, bukan foto produk asli. Tab 3D bisa diseret untuk diputar.','Digital illustrations & 3D renders from the recorded shape and size, not real product photos. Drag the 3D tab to rotate.'])}</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="row" style="gap:6px"><span class="chip">${esc(el('bahan', p.bahanBaku))}</span><span class="chip c-pengumpul-ampas">${esc(el('bentuk', p.kategoriBentuk))}</span></div>
@@ -2213,7 +2330,7 @@ V.briket = {
   },
   bind(id) {
     const p = byId('produk', id); if (!p) return;
-    $$('[data-view]').forEach(b => b.onclick = () => { S.ui.view = b.dataset.view; $('#galMain').innerHTML = art(p, b.dataset.view); $$('[data-view]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $$('[data-view]').forEach(b => b.onclick = () => { S.ui.view = b.dataset.view; $('#galMain').innerHTML = galHTML(p, b.dataset.view); $$('[data-view]').forEach(x => x.setAttribute('aria-pressed', x === b)); });
     $$('[data-qd]').forEach(b => b.onclick = () => { const i = $('#qtyIn'); i.value = Math.max(1, num(i.value, 1) + +b.dataset.qd); });
     $('#addDetail').onclick = () => addToCart(p.id, $('#qtyIn').value);
     $$('[data-btab]').forEach(b => b.onclick = () => { S.ui.btab = b.dataset.btab; $$('[data-btab]').forEach(x => x.setAttribute('aria-selected', x === b)); $$('[data-tp]').forEach(x => x.hidden = x.dataset.tp !== b.dataset.btab); });
@@ -2240,7 +2357,7 @@ V.bandingkan = {
     const cols = ps.length;
     return `${pageHead(tl(['Bandingkan Briket','Compare Briquettes']), tl(['Nilai terbaik di tiap baris ditandai hijau. Semua angka adalah simulasi.','The best value in each row is highlighted. All figures are simulated.']), `<div><label for="cmpUse">${tl(['Hitung biaya untuk','Cost basis'])}</label><select id="cmpUse">${opts('pakai').map(([v, l]) => `<option value="${v}" ${use === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`)}
     <div class="cmp" style="grid-template-columns:repeat(${cols}, minmax(0, 1fr))">${ps.map(p => `<div class="cmp-col reveal">
-      <div class="pimg">${art(p)}</div>
+      <div class="pimg" data-p3d="${esc(p.id)}">${art(p)}</div>
       <div style="padding:14px 16px"><div class="pcat">${esc(el('bahan', p.bahanBaku))}</div><h3 style="margin:4px 0 8px"><a href="#/briket/${esc(p.id)}" style="color:inherit">${esc(shortName(p))}</a></h3><div class="row" style="gap:6px">${badge('stProduk', p.statusStandarSni)}${demoBadge(p)}</div></div>
       ${rows.map(([k, l, f, fm, best]) => { const vals = ps.map(f); const v = f(p); const isBest = cols > 1 && v === (best === 'max' ? Math.max(...vals) : Math.min(...vals)); const mx = Math.max(...vals) || 1;
         return `<div class="cmp-row ${isBest ? 'best' : ''}"><div class="lab">${esc(tl(l))}</div><div class="row between"><b>${fm(v)}</b>${isBest ? `<span class="crown">${ico('check', 14)} ${tl(['terbaik','best'])}</span>` : ''}</div><div class="bar"><i style="width:${v / mx * 100}%"></i></div></div>`; }).join('')}
@@ -3026,6 +3143,7 @@ load(); if (!Array.isArray(S.cart)) S.cart = []; if (!Array.isArray(S.compare)) 
 initShell(); timerTick(); render();
 if (!S.settings.onboarded) setTimeout(() => { if ($('#modal').hidden) openTour(); }, 700);
 
+
 /* ======================= FX: animasi interaktif kursor ======================= */
 // Tilt 3D + kilau pada kartu, tombol magnetik, parallax hero, sorotan mengikuti kursor.
 // Hanya aktif untuk mouse/trackpad dan bila pengguna tidak memilih "kurangi gerakan".
@@ -3055,7 +3173,7 @@ const FX = {
     const mag = t.closest('.fx-mag');
     $$('.fx-mag.is-mag').forEach(m => { if (m !== mag) { m.classList.remove('is-mag'); m.style.removeProperty('--bx'); m.style.removeProperty('--by'); } });
     if (mag && !mag.disabled) { const r = mag.getBoundingClientRect(); mag.style.setProperty('--bx', ((e.clientX - r.left - r.width / 2) * .18).toFixed(1) + 'px'); mag.style.setProperty('--by', ((e.clientY - r.top - r.height / 2) * .3).toFixed(1) + 'px'); mag.classList.add('is-mag'); }
-    const hero = t.closest('.hero'), art = hero && hero.querySelector('.hero-art');
+    const hero = t.closest('.hero'), art = hero && hero.querySelector('.hero-art:not(.is-3d)');
     $$('.hero-art.is-par').forEach(a => { if (a !== art) a.classList.remove('is-par'); });
     if (art) { const r = hero.getBoundingClientRect(); art.style.setProperty('--px', (((e.clientX - r.left) / r.width - .5) * -16).toFixed(1) + 'px'); art.style.setProperty('--py', (((e.clientY - r.top) / r.height - .5) * -10).toFixed(1) + 'px'); art.classList.add('is-par'); }
   },
@@ -3071,6 +3189,7 @@ const FX = {
 };
 
 FX.init();
+E3D.init();
 initServer().then(on => { if (!on) initCloud(); });
 </script>
 </body>
